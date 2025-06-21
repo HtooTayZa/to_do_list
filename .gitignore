@@ -1,0 +1,8 @@
+keep
+*.exe
+*.test
+/bin/
+/data/
+
+../git_scribe.py
+../.git_scribe_state.json
