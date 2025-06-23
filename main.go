@@ -71,7 +71,7 @@ type server struct {
 }
 
 func (s *server) handle(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path == "/healthz" {
+	if r.URL.Path == "/healthz" || r.URL.Path == "/readyz" {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("ok"))
 		return
