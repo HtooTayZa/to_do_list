@@ -9,6 +9,8 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -113,16 +115,39 @@ func (s *server) handle(w http.ResponseWriter, r *http.Request) {
 	body, _ := io.ReadAll(resp.Body)
 	resp.Body.Close()
 
+	ttl := s.cache.ttl
+	if cc := resp.Header.Get("Cache-Control"); cc != "" {
+		if d, ok := parseMaxAge(cc); ok {
+			ttl = d
+		}
+	}
+
 	e := &entry{
 		body:      body,
 		status:    resp.StatusCode,
 		header:    resp.Header.Clone(),
-		expiresAt: time.Now().Add(s.cache.ttl),
+		expiresAt: time.Now().Add(ttl),
 	}
-	s.cache.set(key, e)
+	if resp.StatusCode == http.StatusOK {
+		s.cache.set(key, e)
+	}
 	copyHeader(w.Header(), e.header)
 	w.WriteHeader(e.status)
 	_, _ = w.Write(e.body)
+}
+
+func parseMaxAge(cacheControl string) (time.Duration, bool) {
+	for _, part := range strings.Split(cacheControl, ",") {
+		part = strings.TrimSpace(part)
+		if strings.HasPrefix(part, "max-age=") {
+			secs, err := strconv.Atoi(strings.TrimPrefix(part, "max-age="))
+			if err != nil || secs < 0 {
+				return 0, false
+			}
+			return time.Duration(secs) * time.Second, true
+		}
+	}
+	return 0, false
 }
 
 func copyHeader(dst, src http.Header) {

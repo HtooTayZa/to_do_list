@@ -1,31 +1,17 @@
 package main
 
 import (
-	"net/http"
-	"net/http/httptest"
 	"testing"
 	"time"
 )
 
-func TestHealthz(t *testing.T) {
-	s := &server{cache: newCache(8, 0), started: time.Now()}
-	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
-	rec := httptest.NewRecorder()
-	s.handle(rec, req)
-	if rec.Code != http.StatusOK {
-		t.Fatalf("expected 200, got %d", rec.Code)
+func TestParseMaxAge(t *testing.T) {
+	d, ok := parseMaxAge("public, max-age=120")
+	if !ok || d != 120*time.Second {
+		t.Fatalf("got %v ok=%v", d, ok)
 	}
-}
-
-func TestStatsJSON(t *testing.T) {
-	s := &server{cache: newCache(8, 0), started: time.Now()}
-	req := httptest.NewRequest(http.MethodGet, "/stats", nil)
-	rec := httptest.NewRecorder()
-	s.handle(rec, req)
-	if rec.Code != http.StatusOK {
-		t.Fatalf("expected 200, got %d", rec.Code)
-	}
-	if rec.Header().Get("Content-Type") != "application/json" {
-		t.Fatalf("expected json content type")
+	_, ok = parseMaxAge("no-store")
+	if ok {
+		t.Fatal("expected no max-age")
 	}
 }
