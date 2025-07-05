@@ -7,6 +7,6 @@ go build -o keep .
 KEEP_UPSTREAM=http://127.0.0.1:8000 ./keep
 ```
 
-Endpoints: `/healthz`, `/stats`, everything else proxies upstream with in-memory TTL cache.
+Endpoints: `/healthz`, `/readyz`, `/stats`, everything else proxies upstream with in-memory TTL cache.
 
-Config: `config.toml` or env `KEEP_UPSTREAM`, `KEEP_ADDR`, `KEEP_TTL`, `KEEP_MAX_ENTRIES`.
+Environment: `KEEP_UPSTREAM`, `KEEP_ADDR`, `KEEP_TTL` (default 60s). Honors upstream `Cache-Control: max-age` when present.
