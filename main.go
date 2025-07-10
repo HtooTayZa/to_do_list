@@ -173,6 +173,12 @@ func main() {
 			ttl = d
 		}
 	}
+	maxEntries := 256
+	if v := os.Getenv("KEEP_MAX_ENTRIES"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			maxEntries = n
+		}
+	}
 
 	u, err := url.Parse(upstream)
 	if err != nil {
@@ -183,7 +189,7 @@ func main() {
 	s := &server{
 		upstream: u,
 		proxy:    httputil.NewSingleHostReverseProxy(u),
-		cache:    newCache(256, ttl),
+		cache:    newCache(maxEntries, ttl),
 		started:  time.Now(),
 	}
 
