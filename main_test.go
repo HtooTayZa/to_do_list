@@ -29,6 +29,7 @@ func TestNon200ResponsesAreNotCached(t *testing.T) {
 	s := &server{
 		upstream: mustParseURL(upstream.URL),
 		cache:    c,
+		coalesce: newCoalescer(),
 		started:  time.Now(),
 	}
 

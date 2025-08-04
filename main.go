@@ -66,10 +66,11 @@ func (c *cache) set(key string, e *entry) {
 }
 
 type server struct {
-	upstream *url.URL
-	proxy    *httputil.ReverseProxy
-	cache    *cache
-	started  time.Time
+	upstream   *url.URL
+	proxy      *httputil.ReverseProxy
+	cache      *cache
+	coalesce   *coalescer
+	started    time.Time
 }
 
 func (s *server) handle(w http.ResponseWriter, r *http.Request) {
@@ -106,30 +107,39 @@ func (s *server) handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	target := s.upstream.ResolveReference(r.URL).String()
-	resp, err := http.Get(target)
+	e, err := s.coalesce.do(key, func() (*entry, error) {
+		if cached, ok := s.cache.get(key); ok {
+			return cached, nil
+		}
+		target := s.upstream.ResolveReference(r.URL).String()
+		resp, fetchErr := http.Get(target)
+		if fetchErr != nil {
+			return nil, fetchErr
+		}
+		body, _ := io.ReadAll(resp.Body)
+		resp.Body.Close()
+
+		ttl := s.cache.ttl
+		if cc := resp.Header.Get("Cache-Control"); cc != "" {
+			if d, ok := parseMaxAge(cc); ok {
+				ttl = d
+			}
+		}
+
+		fetched := &entry{
+			body:      body,
+			status:    resp.StatusCode,
+			header:    resp.Header.Clone(),
+			expiresAt: time.Now().Add(ttl),
+		}
+		if resp.StatusCode == http.StatusOK {
+			s.cache.set(key, fetched)
+		}
+		return fetched, nil
+	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadGateway)
 		return
-	}
-	body, _ := io.ReadAll(resp.Body)
-	resp.Body.Close()
-
-	ttl := s.cache.ttl
-	if cc := resp.Header.Get("Cache-Control"); cc != "" {
-		if d, ok := parseMaxAge(cc); ok {
-			ttl = d
-		}
-	}
-
-	e := &entry{
-		body:      body,
-		status:    resp.StatusCode,
-		header:    resp.Header.Clone(),
-		expiresAt: time.Now().Add(ttl),
-	}
-	if resp.StatusCode == http.StatusOK {
-		s.cache.set(key, e)
 	}
 	copyHeader(w.Header(), e.header)
 	w.WriteHeader(e.status)
@@ -190,6 +200,7 @@ func main() {
 		upstream: u,
 		proxy:    httputil.NewSingleHostReverseProxy(u),
 		cache:    newCache(maxEntries, ttl),
+		coalesce: newCoalescer(),
 		started:  time.Now(),
 	}
 
