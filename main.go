@@ -102,6 +102,7 @@ func (s *server) handle(w http.ResponseWriter, r *http.Request) {
 
 	key := r.URL.String()
 	if e, ok := s.cache.get(key); ok {
+		w.Header().Set("X-Keep-Cache", "HIT")
 		copyHeader(w.Header(), e.header)
 		w.WriteHeader(e.status)
 		_, _ = w.Write(e.body)
@@ -142,6 +143,7 @@ func (s *server) handle(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadGateway)
 		return
 	}
+	w.Header().Set("X-Keep-Cache", "MISS")
 	copyHeader(w.Header(), e.header)
 	w.WriteHeader(e.status)
 	_, _ = w.Write(e.body)

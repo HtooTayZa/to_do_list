@@ -40,8 +40,37 @@ func TestNon200ResponsesAreNotCached(t *testing.T) {
 	if rec.Code != http.StatusNotFound {
 		t.Fatalf("status %d", rec.Code)
 	}
-	if _, ok := c.get("/missing"); ok {
+    if _, ok := c.get("/missing"); ok {
 		t.Fatal("expected 404 response not to be cached")
+	}
+}
+
+func TestCacheHitSetsHeader(t *testing.T) {
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "max-age=60")
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer upstream.Close()
+
+	c := newCache(8, time.Minute)
+	s := &server{
+		upstream: mustParseURL(upstream.URL),
+		cache:    c,
+		coalesce: newCoalescer(),
+		started:  time.Now(),
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "/page", nil)
+	rec := httptest.NewRecorder()
+	s.handle(rec, req)
+	if rec.Header().Get("X-Keep-Cache") != "MISS" {
+		t.Fatalf("first request expected MISS, got %q", rec.Header().Get("X-Keep-Cache"))
+	}
+
+	rec2 := httptest.NewRecorder()
+	s.handle(rec2, req)
+	if rec2.Header().Get("X-Keep-Cache") != "HIT" {
+		t.Fatalf("second request expected HIT, got %q", rec2.Header().Get("X-Keep-Cache"))
 	}
 }
 

@@ -51,3 +51,4 @@ Tiny HTTP caching reverse proxy with TTL and `/stats`.
 | 2025-11-12 | chore: add Dockerfile for keep sidecar | 6 |
 | 2025-11-20 | feat: coalesce concurrent cache miss fetches | 3 |
 | 2025-11-25 | fix: use graceful shutdown with timeout on signals | 5 |
+| 2025-08-15 | feat: add X-Keep-Cache hit/miss response header | 4 |
