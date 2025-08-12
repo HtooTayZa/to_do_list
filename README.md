@@ -9,4 +9,6 @@ KEEP_UPSTREAM=http://127.0.0.1:8000 ./keep
 
 Endpoints: `/healthz`, `/readyz`, `/stats`, everything else proxies upstream with in-memory TTL cache.
 
+Cached GET responses include `X-Keep-Cache: HIT` or `MISS` for quick debugging.
+
 Environment: `KEEP_UPSTREAM`, `KEEP_ADDR`, `KEEP_TTL` (default 60s), `KEEP_MAX_ENTRIES` (default 256). Honors upstream `Cache-Control: max-age` when present.
