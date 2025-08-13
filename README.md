@@ -11,6 +11,8 @@ Endpoints: `/healthz`, `/readyz`, `/stats`, everything else proxies upstream wit
 
 Cached GET responses include `X-Keep-Cache: HIT` or `MISS` for quick debugging.
 
+`POST /cache/purge` clears the in-memory cache (dev helper).
+
 Environment: `KEEP_UPSTREAM`, `KEEP_ADDR`, `KEEP_TTL` (default 60s), `KEEP_MAX_ENTRIES` (default 256). Honors upstream `Cache-Control: max-age` when present; skips cache for `no-store`.
 
 `/stats` includes `hit_ratio` (hits / (hits + misses)).

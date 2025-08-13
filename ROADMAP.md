@@ -54,3 +54,4 @@ Tiny HTTP caching reverse proxy with TTL and `/stats`.
 | 2025-08-15 | feat: add X-Keep-Cache hit/miss response header | 4 |
 | 2025-08-20 | feat: skip caching responses with Cache-Control no-store | 2 |
 | 2025-08-22 | feat: add hit_ratio to stats json endpoint | 4 |
+| 2025-08-25 | feat: add POST /cache/purge dev endpoint | 2 |

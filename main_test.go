@@ -92,6 +92,22 @@ func TestStatsIncludesHitRatio(t *testing.T) {
 	}
 }
 
+func TestCachePurgeClearsEntries(t *testing.T) {
+	c := newCache(4, time.Minute)
+	c.set("/a", &entry{body: []byte("a"), status: 200, expiresAt: time.Now().Add(time.Minute)})
+	s := &server{cache: c, started: time.Now()}
+
+	req := httptest.NewRequest(http.MethodPost, "/cache/purge", nil)
+	rec := httptest.NewRecorder()
+	s.handle(rec, req)
+	if rec.Code != http.StatusNoContent {
+		t.Fatalf("status %d", rec.Code)
+	}
+	if len(c.items) != 0 {
+		t.Fatal("expected empty cache after purge")
+	}
+}
+
 func TestCacheHitSetsHeader(t *testing.T) {
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "max-age=60")

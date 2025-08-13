@@ -80,6 +80,13 @@ func (s *server) handle(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("ok"))
 		return
 	}
+	if r.URL.Path == "/cache/purge" && r.Method == http.MethodPost {
+		s.cache.mu.Lock()
+		s.cache.items = make(map[string]*entry)
+		s.cache.mu.Unlock()
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
 	if r.URL.Path == "/stats" {
 		s.cache.mu.RLock()
 		stats := map[string]any{
