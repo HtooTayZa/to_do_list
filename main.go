@@ -89,6 +89,12 @@ func (s *server) handle(w http.ResponseWriter, r *http.Request) {
 			"entries":   len(s.cache.items),
 			"uptime_s":  int(time.Since(s.started).Seconds()),
 		}
+		total := s.cache.hits + s.cache.misses
+		if total > 0 {
+			stats["hit_ratio"] = float64(s.cache.hits) / float64(total)
+		} else {
+			stats["hit_ratio"] = 0.0
+		}
 		s.cache.mu.RUnlock()
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(stats)
@@ -134,7 +140,7 @@ func (s *server) handle(w http.ResponseWriter, r *http.Request) {
 			header:    resp.Header.Clone(),
 			expiresAt: time.Now().Add(ttl),
 		}
-		if resp.StatusCode == http.StatusOK {
+		if resp.StatusCode == http.StatusOK && !cacheControlNoStore(resp.Header.Get("Cache-Control")) {
 			s.cache.set(key, fetched)
 		}
 		return fetched, nil
@@ -161,6 +167,15 @@ func parseMaxAge(cacheControl string) (time.Duration, bool) {
 		}
 	}
 	return 0, false
+}
+
+func cacheControlNoStore(cacheControl string) bool {
+	for _, part := range strings.Split(cacheControl, ",") {
+		if strings.TrimSpace(part) == "no-store" {
+			return true
+		}
+	}
+	return false
 }
 
 func copyHeader(dst, src http.Header) {
