@@ -194,26 +194,11 @@ func copyHeader(dst, src http.Header) {
 }
 
 func main() {
-	upstream := os.Getenv("KEEP_UPSTREAM")
-	if upstream == "" {
-		upstream = "http://127.0.0.1:8000"
-	}
-	addr := os.Getenv("KEEP_ADDR")
-	if addr == "" {
-		addr = ":8787"
-	}
-	ttl := 60 * time.Second
-	if v := os.Getenv("KEEP_TTL"); v != "" {
-		if d, err := time.ParseDuration(v); err == nil {
-			ttl = d
-		}
-	}
-	maxEntries := 256
-	if v := os.Getenv("KEEP_MAX_ENTRIES"); v != "" {
-		if n, err := strconv.Atoi(v); err == nil && n > 0 {
-			maxEntries = n
-		}
-	}
+	cfg := loadConfig()
+	upstream := cfg.Upstream
+	addr := cfg.Addr
+	ttl := cfg.TTL
+	maxEntries := cfg.MaxEntries
 
 	u, err := url.Parse(upstream)
 	if err != nil {

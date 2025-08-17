@@ -1,0 +1,5 @@
+# keep sidecar defaults (override with KEEP_* env vars)
+upstream = "http://127.0.0.1:8000"
+addr = ":8787"
+ttl = "60s"
+max_entries = 256
