@@ -20,3 +20,5 @@ Environment: `KEEP_UPSTREAM`, `KEEP_ADDR`, `KEEP_TTL` (default 60s), `KEEP_MAX_E
 <!-- timeline: docs: document config.toml and KEEP_CONFIG in readme -->
 
 <!-- timeline: docs: sync keep roadmap through November milestones -->
+
+<!-- timeline: docs: add example sidecar docker run snippet to readme -->
