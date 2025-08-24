@@ -30,3 +30,5 @@ Environment: `KEEP_UPSTREAM`, `KEEP_ADDR`, `KEEP_TTL` (default 60s), `KEEP_MAX_E
 <!-- timeline: docs: clarify env override order in readme -->
 
 <!-- timeline: docs: add cache purge endpoint usage to readme -->
+
+<!-- timeline: docs: document X-Keep-Cache response header behavior -->
