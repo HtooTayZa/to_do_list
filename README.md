@@ -34,3 +34,5 @@ Environment: `KEEP_UPSTREAM`, `KEEP_ADDR`, `KEEP_TTL` (default 60s), `KEEP_MAX_E
 <!-- timeline: docs: document X-Keep-Cache response header behavior -->
 
 <!-- timeline: chore: add sample config.toml comments for ttl tuning -->
+
+<!-- timeline: docs: timeline maintenance (2025-09-12) -->
