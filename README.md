@@ -40,3 +40,7 @@ docker run --rm -p 8787:8787 -e KEEP_UPSTREAM=http://host.docker.internal:8000 k
 ```bash
 go test ./...
 ```
+
+## Portfolio
+
+Runs as a sidecar in the [`checkup`](../checkup) compose stack. Hit/miss stats appear on the `switchboard` dashboard.
